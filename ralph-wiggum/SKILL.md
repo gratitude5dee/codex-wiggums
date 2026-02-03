@@ -9,6 +9,13 @@ description: Prompt loop and queue control for Codex, mirroring Ralph Wiggum loo
 
 Provide a manual prompt loop and queue so Codex can repeat the same request for multiple iterations and move through queued prompts safely.
 
+## Install
+
+- **Fast install**: Use `$skill-installer` and point it at `https://github.com/gratitude5dee/codex-wiggums`.
+- **Manual install**: Place `ralph-wiggum` under `~/.codex/skills/ralph-wiggum`.
+
+Restart Codex after installation.
+
 ## Quick Start
 
 ```
