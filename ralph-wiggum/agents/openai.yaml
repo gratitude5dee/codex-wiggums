@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ralph Wiggum"
+  short_description: "Loop prompts with a local queue"
+  default_prompt: "Use $ralph-wiggum to loop a prompt with /ralph-loop and continue with /ralph-next."
