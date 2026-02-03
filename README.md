@@ -2,18 +2,41 @@
 
 Manual prompt loop and queue for Codex, inspired by the Ralph Wiggum loop pattern.
 
-## What This Does
+## Standards Alignment
 
-- Loop a prompt for N iterations.
-- Queue additional prompts behind the active loop.
-- Resume with `/ralph-next` and inspect `/ralph-status`.
-- Cancel immediately with `/cancel-ralph`.
+This repo follows the Codex skills standard:
 
-## Install
+- A skill is a folder that contains a required `SKILL.md` with YAML frontmatter (`name` and `description`).
+- Optional folders include `scripts/`, `references/`, and `assets/`.
+- Skills are discoverable when placed under supported locations like `~/.codex/skills` (user) or `.codex/skills` (repo).
 
-1. Clone this repo.
-2. Place the `ralph-wiggum` folder under `~/.codex/skills`.
-3. Restart the Codex app if the skill does not appear.
+## Fast Install (Recommended)
+
+From within Codex, use the built-in installer and point it at this repo URL:
+
+```
+$skill-installer
+Install the ralph-wiggum skill from https://github.com/gratitude5dee/codex-wiggums
+```
+
+Restart Codex after installation.
+
+## Manual Install
+
+```bash
+git clone https://github.com/gratitude5dee/codex-wiggums.git
+mkdir -p ~/.codex/skills
+cp -R codex-wiggums/ralph-wiggum ~/.codex/skills/ralph-wiggum
+```
+
+Alternatively, check the skill into a repo-scoped location:
+
+```bash
+mkdir -p .codex/skills
+cp -R codex-wiggums/ralph-wiggum .codex/skills/ralph-wiggum
+```
+
+Restart Codex after installation.
 
 ## Quick Start
 
