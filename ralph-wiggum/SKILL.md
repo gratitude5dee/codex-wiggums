@@ -1,129 +1,79 @@
 ---
 name: ralph-wiggum
-description: Prompt loop and queue control for Codex, mirroring Ralph Wiggum loop semantics. Use when you need to repeat a prompt, queue iterations, resume with /ralph-next, check /ralph-status, or cancel with /cancel-ralph.
+description: Persistent prompt loop, template pack, and optional benchmark tooling for Codex. Use when you need to repeat or stage a coding task, wrap it in a verifiable completion contract, render build or review loop templates, or handle /ralph-loop, /ralph-next, /ralph-status, or /cancel-ralph commands.
 ---
 
 # Ralph Wiggum
 
 ## Overview
 
-Provide a manual prompt loop and queue so Codex can repeat the same request for multiple iterations and move through queued prompts safely.
+Provide a persistent coding loop for Codex with reusable prompt templates, explicit done conditions, and a completion promise token.
 
 ## Install
 
-- **Fast install**: Use `$skill-installer` and point it at `https://github.com/gratitude5dee/codex-wiggums`.
-- **Manual install**: Place `ralph-wiggum` under `~/.codex/skills/ralph-wiggum`.
+- Fast install: Use `$skill-installer` with `https://github.com/gratitude5dee/codex-wiggums`.
+- Manual install: Place `ralph-wiggum` under `~/.codex/skills/ralph-wiggum`.
 
 Restart Codex after installation.
 
 ## Quick Start
 
-```
-python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py loop --prompt "<text>" --max-iterations 5
+```bash
+python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py loop \
+  --template build \
+  --prompt "Add JWT auth to the API" \
+  --objective "Ship tested auth support" \
+  --done-when "Targeted tests pass and docs are updated"
+
 python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py next
 python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py status
 ```
 
 ## Command Map
 
-- `/ralph-loop [N]` -> `ralph_queue.py loop --prompt "<last user prompt>" --max-iterations N`
-- `/ralph-next` -> `ralph_queue.py next`
-- `/ralph-status` -> `ralph_queue.py status`
-- `/cancel-ralph` -> `ralph_queue.py cancel`
+- `/ralph-loop [N]`: Queue the last user task with a template, done condition, and completion promise.
+- `/ralph-next`: Emit the wrapped prompt for the current Ralph session and decrement one iteration.
+- `/ralph-status`: Show the live session, queue depth, archive count, and runtime state directory.
+- `/cancel-ralph`: Cancel the live Ralph session or a specific session id.
+- `/ralph-template <name>`: Render a reusable build, repair, review, or research template before queueing it.
 
-## Prompt Selection
+## Workflow
 
-- Use the most recent non-command user request as the prompt.
-- If the user supplies an explicit prompt, use that instead.
-- If the last request is ambiguous or multi-part, confirm the exact prompt before looping.
+1. Capture one concrete prompt source.
+2. Choose the narrowest template that matches the task.
+3. State `--objective` and `--done-when` in verifiable language.
+4. Use the emitted wrapped prompt until the task can honestly end with `<promise>COMPLETE</promise>`.
 
-## Queue Semantics
+## References
 
-- `loop` creates a loop item with `remaining = max_iterations`.
-- If no active item exists, the new item becomes active; otherwise it is appended to the queue.
-- `next` returns the active prompt and decrements `remaining` by 1.
-- When `remaining` reaches 0, clear the active item and promote the next queued item, if any.
-
-## Safety Guardrails
-
-- Default `max-iterations` is 5.
-- Hard cap is 25 unless `--force` is explicitly supplied.
-- If the user requests more than 10 iterations, confirm before starting the loop.
-- Always honor `/cancel-ralph` immediately.
+- Read `references/operating-rules.md` for the core loop discipline and promise rules.
+- Read `references/prompt-patterns.md` for curated build, repair, review, and research patterns.
+- Read `references/benchmarking.md` when you want to compare Ralph changes locally or with Harbor / SkillsBench.
 
 ## Script Usage
 
-Start a loop:
-`python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py loop --prompt "<text>" --max-iterations 5`
+Start or enqueue a session:
+`python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py loop --template build --prompt "<text>" --objective "<outcome>" --done-when "<check>"`
 
-Read prompt from a file:
-`python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py loop --prompt-file ./prompt.txt`
+Preview without decrementing:
+`python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py peek`
 
-Read prompt from stdin:
-`cat prompt.txt | python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py loop --prompt-stdin`
+List live and archived sessions:
+`python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py list`
 
-Get the next prompt:
-`python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py next`
+Render a template without queueing:
+`python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py template render review --prompt "<text>"`
 
-Check status:
-`python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py status`
+Run local smoke benchmarks:
+`python ~/.codex/skills/ralph-wiggum/scripts/ralph_bench.py smoke`
 
-Cancel and clear:
-`python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py cancel`
+Use `--json` with `loop`, `next`, `peek`, `status`, `list`, `cancel`, and `template` commands for machine-readable output.
 
-Use `--json` with `loop`, `next`, or `status` for machine-readable output.
+## State
 
-## JSON Output Examples
+Ralph stores runtime state outside the skill folder.
 
-`status --json`:
-```
-{
-  "active": true,
-  "active_id": "...",
-  "active_remaining": 2,
-  "active_max_iterations": 5,
-  "active_created_at": "2026-02-03T18:00:00+00:00",
-  "queue_size": 1
-}
-```
+- macOS default: `~/Library/Application Support/ralph-wiggum/queue.json`
+- Linux default: `$XDG_STATE_HOME/ralph-wiggum/queue.json` or `~/.local/state/ralph-wiggum/queue.json`
 
-`next --json`:
-```
-{
-  "prompt": "...",
-  "remaining": 1,
-  "max_iterations": 5,
-  "id": "...",
-  "created_at": "2026-02-03T18:00:00+00:00",
-  "queue_size": 0,
-  "finished": false
-}
-```
-
-## State File
-
-The queue state is stored at:
-`~/.codex/skills/ralph-wiggum/state/queue.json`
-
-Shape:
-```
-{
-  "version": 1,
-  "active": {
-    "id": "...",
-    "prompt": "...",
-    "remaining": 3,
-    "max_iterations": 5,
-    "created_at": "2026-02-03T18:00:00+00:00"
-  },
-  "queue": [
-    {
-      "id": "...",
-      "prompt": "...",
-      "remaining": 5,
-      "max_iterations": 5,
-      "created_at": "2026-02-03T18:02:00+00:00"
-    }
-  ]
-}
-```
+Legacy state from `~/.codex/skills/ralph-wiggum/state/queue.json` is read automatically if it exists.

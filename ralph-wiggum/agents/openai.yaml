@@ -1,4 +1,4 @@
 interface:
-  display_name: "Ralph Wiggum"
-  short_description: "Loop prompts with a local queue"
-  default_prompt: "Use $ralph-wiggum to loop a prompt with /ralph-loop and continue with /ralph-next."
+  display_name: "Ralph Wiggum Loop"
+  short_description: "Verifiable prompt loops for Codex"
+  default_prompt: "Use $ralph-wiggum to wrap this repo task in a build loop with a done condition and completion promise."

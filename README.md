@@ -1,20 +1,19 @@
 # Codex Wiggums
 
-Manual prompt loop and queue for Codex, inspired by the Ralph Wiggum loop pattern.
+Ralph Wiggum for Codex: a persistent, verifiable coding loop with prompt templates, sessioned state, and optional benchmark tooling.
 
-## Standards Alignment
+## What Changed
 
-This repo follows the Codex skills standard:
+- Verifiable loop prompts with explicit `objective`, `done_when`, and `<promise>COMPLETE</promise>` contracts.
+- Sessioned queue management with `peek`, `list`, template rendering, and archived history.
+- Prompt templates for build, repair, review, and research loops.
+- Optional local smoke benchmarks plus Harbor / SkillsBench pass-through.
 
-- A skill is a folder that contains a required `SKILL.md` with YAML frontmatter (`name` and `description`).
-- Optional folders include `scripts/`, `references/`, and `assets/`.
-- Skills are discoverable when placed under supported locations like `~/.codex/skills` (user) or `.codex/skills` (repo).
+## Fast Install
 
-## Fast Install (Recommended)
+From inside Codex:
 
-From within Codex, use the built-in installer and point it at this repo URL:
-
-```
+```text
 $skill-installer
 Install the ralph-wiggum skill from https://github.com/gratitude5dee/codex-wiggums
 ```
@@ -29,37 +28,42 @@ mkdir -p ~/.codex/skills
 cp -R codex-wiggums/ralph-wiggum ~/.codex/skills/ralph-wiggum
 ```
 
-Alternatively, check the skill into a repo-scoped location:
-
-```bash
-mkdir -p .codex/skills
-cp -R codex-wiggums/ralph-wiggum .codex/skills/ralph-wiggum
-```
-
-Restart Codex after installation.
-
 ## Quick Start
 
 ```bash
-python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py loop --prompt "<text>" --max-iterations 5
+python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py loop \
+  --template build \
+  --prompt "Add user auth to the API" \
+  --objective "Ship tested auth support" \
+  --done-when "The targeted tests pass and docs are updated"
+
 python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py next
 python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py status
 ```
 
-## Command Map
+## Template Commands
 
-- `/ralph-loop [N]` -> `ralph_queue.py loop --prompt "<last user prompt>" --max-iterations N`
-- `/ralph-next` -> `ralph_queue.py next`
-- `/ralph-status` -> `ralph_queue.py status`
-- `/cancel-ralph` -> `ralph_queue.py cancel`
+```bash
+python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py template list
+python ~/.codex/skills/ralph-wiggum/scripts/ralph_queue.py template render review --prompt "Review this PR for regressions"
+```
 
-## CLI Notes
+## Benchmark Commands
 
-- Default `max-iterations` is 5.
-- Hard cap is 25 unless `--force` is supplied.
-- Use `--json` with `loop`, `next`, or `status` for machine-readable output.
-- State is stored at `~/.codex/skills/ralph-wiggum/state/queue.json`.
+Local smoke regression:
 
-## License
+```bash
+python ~/.codex/skills/ralph-wiggum/scripts/ralph_bench.py smoke
+```
 
-MIT
+Optional Harbor / SkillsBench run:
+
+```bash
+python ~/.codex/skills/ralph-wiggum/scripts/ralph_bench.py harbor --dataset /path/to/dataset --agent codex
+```
+
+## Notes
+
+- The installed skill stays standard-library only.
+- Runtime state now lives outside the skill folder so installs stay clean.
+- The skill path stays top-level for simple GitHub URL installation with `$skill-installer`.
